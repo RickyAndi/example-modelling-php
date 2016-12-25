@@ -1,0 +1,18 @@
+{
+    "name": "root/skp",
+    "authors": [
+        {
+            "name": "ricky.andika",
+            "email": "ricky.andika@javan.co.id"
+        }
+    ],
+    "require": {},
+    "autoload": {
+    	"psr-4" : {
+    		"app\\models\\" : "models/"
+    	}
+    },
+    "require-dev": {
+        "behat/behat": "^3.2"
+    }
+}
