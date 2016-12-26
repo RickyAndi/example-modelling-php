@@ -6,6 +6,7 @@ use app\models\Skp;
 use app\models\SkpItem;
 use app\models\SkpItemMilestone;
 use app\models\PenilaianBulanan;
+use app\models\PeriodeParameter;
 use PHPUnit\Framework\TestCase;
 
 class SkpTest extends TestCase
@@ -120,42 +121,50 @@ class SkpTest extends TestCase
 
     public function testSkpCanDecideWhichMonthToBeDinilai()
     {
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(20, 30);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(5);
+
         $expectedMonth_1 = 11;
-        $monthToBeDinilai_1 = $this->skp->getMilestoneMonthTobeDinilai();
+        $monthToBeDinilai_1 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-12-3");
         
         $expectedMonth_2 = 3;
-        $monthToBeDinilai_2 = $this->skp->getMilestoneMonthTobeDinilai(4);
+        $monthToBeDinilai_2 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-4-1");
 
         $expectedMonth_3 = 4;
-        $monthToBeDinilai_3 = $this->skp->getMilestoneMonthTobeDinilai(5);
+        $monthToBeDinilai_3 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-5-20");
 
         $penilaianBulanan_3 = new PenilaianBulanan(3);
         $penilaianBulanan_3->makeAsAlreadyMarked();
         $this->skp->addPenilaianBulanans($penilaianBulanan_3);
         $expectedMonth_4 = 4;
-        $monthToBeDinilai_4 = $this->skp->getMilestoneMonthTobeDinilai(5);
+        $monthToBeDinilai_4 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan,  "2016-4-21");
+
+        $penilaianBulanan_6 = new PenilaianBulanan(4);
+        $penilaianBulanan_6->makeAsAlreadyMarked();
+        $this->skp->addPenilaianBulanans($penilaianBulanan_6);
+        $expectedMonth_6 = null;
+        $monthToBeDinilai_6 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan,  "2016-4-21");
 
         $penilaianBulanan_4 = new PenilaianBulanan(5);
         $penilaianBulanan_4->makeAsAlreadyMarked();
         $this->skp->addPenilaianBulanans($penilaianBulanan_4);
-        $penilaianBulanan_5 = new PenilaianBulanan(4);
-        $penilaianBulanan_5->makeAsAlreadyMarked();
-        $this->skp->addPenilaianBulanans($penilaianBulanan_5);
         $expectedMonth_5 = null;
-        $monthToBeDinilai_5 = $this->skp->getMilestoneMonthTobeDinilai(5);
-
+        $monthToBeDinilai_5 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-5-20");
         
         $this->assertEquals($expectedMonth_1, $monthToBeDinilai_1);
         $this->assertEquals($expectedMonth_2, $monthToBeDinilai_2);
         $this->assertEquals($expectedMonth_3, $monthToBeDinilai_3);
         $this->assertEquals($expectedMonth_4, $monthToBeDinilai_4);
         $this->assertEquals($expectedMonth_5, $monthToBeDinilai_5);
+        $this->assertEquals($expectedMonth_6, $monthToBeDinilai_6);
     }
 
     public function testIfPreviousMilestoneMonthStillNotDinilaiSoInNextMonthStillGetPreviousMonth()
     {
         $skp = new Skp();
-        
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(20, 25);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(7);
+
         $skpItem = new SkpItem('satu');
         $skpItemMilestones = [
             new SkpItemMilestone(1),
@@ -171,7 +180,7 @@ class SkpTest extends TestCase
 
         $expectedMonth = 1;
 
-        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai(2));
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-2-1"));
 
         $penilaianBulanan = new PenilaianBulanan(1);
         $penilaianBulanan->makeAsAlreadyMarked();
@@ -179,13 +188,15 @@ class SkpTest extends TestCase
 
         $expectedMonth = 2;
 
-        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai(2));
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $periodeRealisasiBulanan, "2016-2-1"));
     }
 
     public function testIfCurrentMonthNotExistInMilestoneMonthAndPreviousMonthDoNotHavePenilaian()
     {
         $skp = new Skp();
-        
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(20, 27);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(5);
+
         $skpItem = new SkpItem('satu');
         $skpItemMilestones = [
             new SkpItemMilestone(1),
@@ -201,11 +212,11 @@ class SkpTest extends TestCase
 
         $expectedMonth = 1;
 
-        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai(2));
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $periodeRealisasiBulanan, "2016-2-1"));
 
         $expectedMonth = 3;
 
-        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai(4));
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $periodeRealisasiBulanan, "2016-4-1"));
     }
 
     public function testIfTwoMonthsSequentiallyDontHaveMilestoneMonths()
@@ -227,6 +238,9 @@ class SkpTest extends TestCase
 
         $expectedMonth = null;
 
-        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai(3));
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(20, 25);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(5);
+
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-3-20"));
     }
 }
