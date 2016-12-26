@@ -89,34 +89,46 @@ class Skp
 		return $availableMilestoneMonths;
 	}
 	
-	public function getMilestoneMonthTobeDinilai($month = null)
+	public function getMilestoneMonthTobeDinilai(
+		PeriodeParameter $periodeRealisasiBulanan,
+		PeriodeParameter $tenggangWaktuRealisasiBulanan,
+		$date = null
+	)
 	{
-		$currentMonth = date('n');
-
-		if(null !== $month) {
-			$currentMonth = $month;
+		$currentDate = date('Y-n-j');
+		
+		if(null !== $date) {
+			$currentDate = $date;
 		}
 		
+		$currentMonth = date('n', strtotime($currentDate));
+
 		if($this->isMonthHavePenilaian($currentMonth)) {
 			$indexOfCurrentMonth = $this->getPositionOfMonthInMilestoneMonth($currentMonth);
 			
 			if($indexOfCurrentMonth === 0) {
 				if(!$this->penilaianSpecificMonthAlreadyMarked($currentMonth)) {
-					return $currentMonth;	
+					if($this->canDoAnyRealisasiAccordingToNormalDate($periodeRealisasiBulanan, $currentDate) || $this->canDoAnyRealisasiAccordingToExtendedDate($tenggangWaktuRealisasiBulanan, $periodeRealisasiBulanan, $currentDate, $currentMonth)) {
+						return $currentMonth;
+					}
 				}
-
 				return null;				
 			}
 
 			$previousMonthIndex = $indexOfCurrentMonth - 1;
 			$previousMonth = $this->getMilestoneMonthByIndex($previousMonthIndex);
-
+			
 			if(!$this->penilaianSpecificMonthAlreadyMarked($previousMonth)) {
-				return $previousMonth;	
+				if($this->canDoAnyRealisasiAccordingToExtendedDate($tenggangWaktuRealisasiBulanan, $periodeRealisasiBulanan, $currentDate, $previousMonth)) {
+
+					return $previousMonth;
+				}
 			}
 
 			if(!$this->penilaianSpecificMonthAlreadyMarked($currentMonth)) {
-				return $currentMonth;	
+				if($this->canDoAnyRealisasiAccordingToNormalDate($periodeRealisasiBulanan, $currentDate) || $this->canDoAnyRealisasiAccordingToExtendedDate($tenggangWaktuRealisasiBulanan, $periodeRealisasiBulanan, $currentDate, $currentMonth)) {
+					return $currentMonth;
+				}
 			}
 
 			return null;
@@ -134,12 +146,77 @@ class Skp
 					return null;
 				}
 
-				return $previousMonth;
+				if($this->canDoAnyRealisasiAccordingToExtendedDate($tenggangWaktuRealisasiBulanan, $periodeRealisasiBulanan, $currentDate, $previousMonth)) {
+					return $previousMonth;
+				} 
 			}
 			
 			return null;
 		}
 	}
+
+	public function canDoAnyRealisasiAccordingToNormalDate(PeriodeParameter $periodeRealisasiBulanan, $date = null)
+	{
+		$currentDate = date("Y-n-j");
+
+		if(null !== $date) {
+			$currentDate = $date;
+		}
+
+		$currentMonth = date('n', strtotime($currentDate));
+		$currentYear = date('Y', strtotime($currentDate));
+
+		$minPeriodeDate = $periodeRealisasiBulanan->value1;
+		$maxPeriodeDate = $periodeRealisasiBulanan->value2;
+
+		$periodeMin = "{$currentYear}-{$currentMonth}-{$minPeriodeDate}";
+		$periodeMax = "{$currentYear}-{$currentMonth}-{$maxPeriodeDate}";
+
+		if(!checkdate($currentMonth, $maxPeriodeDate, $currentYear)) {
+			$maxPeriodeDate = date('t');
+			$periodeMax = "{$currentYear}-{$currentMonth}-{$maxPeriodeDate}";
+		}
+
+		
+
+		return $currentDate >= $periodeMin && $currentDate >= $periodeMax; 
+	}
+
+	public function canDoAnyRealisasiAccordingToExtendedDate(
+		PeriodeParameter $tenggangWaktuRealisasiBulanan,
+		PeriodeParameter $periodeRealisasiBulanan,
+		$date = null,
+		$month = null
+	)
+	{
+		$currentDate = date("Y-n-j");
+
+		if(null !== $date) {
+			$currentDate = $date;
+		}
+		
+		$toBeCheckedMonth = date('n');
+		if(null !== $month) {
+			$toBeCheckedMonth = $month;
+		}
+
+		$currentYear = date('Y', strtotime($currentDate));
+
+		$maxPeriodeDate = $periodeRealisasiBulanan->value2;
+
+		$periodeMax = "{$currentYear}-{$toBeCheckedMonth}-{$maxPeriodeDate}";
+		
+		if(!checkdate($toBeCheckedMonth, $maxPeriodeDate, $currentYear)) {
+			$maxPeriodeDate = date('t');
+			$periodeMax = "{$currentYear}-{$toBeCheckedMonth}-{$maxPeriodeDate}";
+		}
+
+		$extendedDatePeriode = date('Y-n-j', strtotime($periodeMax . "+{$tenggangWaktuRealisasiBulanan->value1} days"));
+		
+		return $currentDate <= $extendedDatePeriode;
+	}
+
+
 
 	public function getPenilaianForSpecificMonth($month)
 	{
