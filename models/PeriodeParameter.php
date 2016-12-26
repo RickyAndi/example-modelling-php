@@ -4,18 +4,22 @@ namespace app\models;
 
 class PeriodeParameter
 {
-	public static function realisasiBulananPeriode()
+	public $value1;
+	public $value2;
+
+	public function __construct($value1 = null, $value2 = null)
 	{
-		return [
-			'value_1' => 1,
-			'value_2' => 20
-		];
+		$this->value1 = $value1;
+		$this->value2 = $value2;
 	}
 
-	public static function tenggangWaktuRealisasiBulanan()
+	public static function realisasiBulananPeriode($value1 = null, $value2 = null)
 	{
-		return [
-			'value_1' => 5
-		];	
+		return new static($value1, $value2);
+	}
+
+	public static function tenggangWaktuRealisasiBulanan($value1 = null)
+	{
+		return new static($value1);
 	}
 }
