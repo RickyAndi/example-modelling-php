@@ -131,7 +131,7 @@ class SkpTest extends TestCase
         $monthToBeDinilai_2 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-4-1");
 
         $expectedMonth_3 = 4;
-        $monthToBeDinilai_3 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-5-20");
+        $monthToBeDinilai_3 = $this->skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-5-1");
 
         $penilaianBulanan_3 = new PenilaianBulanan(3);
         $penilaianBulanan_3->makeAsAlreadyMarked();
@@ -242,5 +242,104 @@ class SkpTest extends TestCase
         $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(5);
 
         $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-3-20"));
+    }
+
+    public function testSkpCanGetMilestoneToBeMarked_scenario_1()
+    {
+        $skp = new Skp();
+        
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(1, 20);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(5);
+
+        $skpItem = new SkpItem('satu');
+        $skpItemMilestones = [
+            new SkpItemMilestone(1),
+            new SkpItemMilestone(2),
+            new SkpItemMilestone(3),
+            new SkpItemMilestone(4)
+        ];
+
+        $skpItem->setSkpItemMilestones($skpItemMilestones);
+        $skp->setSkpItems([$skpItem]);
+
+        $expectedMonth = 1;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-1-5"));
+
+        $expectedMonth = 1;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-1-21"));
+
+        $expectedMonth = null;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-1-27"));
+    }
+
+    public function testSkpCanGetMilestoneToBeMarked_scenario_2()
+    {
+        $skp = new Skp();
+        
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(20, 25);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(7);
+
+        $skpItem = new SkpItem('satu');
+        $skpItemMilestones = [
+            new SkpItemMilestone(1),
+            new SkpItemMilestone(2),
+            new SkpItemMilestone(3),
+            new SkpItemMilestone(4)
+        ];
+
+        $skpItem->setSkpItemMilestones($skpItemMilestones);
+        $skp->setSkpItems([$skpItem]);
+
+        $expectedMonth = 1;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-2-1"));
+
+        $expectedMonth = 2;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-2-5"));
+
+        $penilaianBulanan = new PenilaianBulanan(2);
+        $penilaianBulanan->makeAsAlreadyMarked();
+        $skp->addPenilaianBulanans($penilaianBulanan);
+
+        $expectedMonth = null;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-2-6"));
+    }
+
+    public function testSkpCanGetMilestoneToBeMarked_scenario_3()
+    {
+        $skp = new Skp();
+        
+        $periodeRealisasiBulanan = PeriodeParameter::realisasiBulananPeriode(20, 25);
+        $tenggangWaktuRealisasiBulanan = PeriodeParameter::tenggangWaktuRealisasiBulanan(7);
+
+        $skpItem = new SkpItem('satu');
+        $skpItemMilestones = [
+            new SkpItemMilestone(2),
+            new SkpItemMilestone(3),
+            new SkpItemMilestone(4)
+        ];
+
+        $skpItem->setSkpItemMilestones($skpItemMilestones);
+        $skp->setSkpItems([$skpItem]);
+
+        $expectedMonth = null;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-1-1"));
+
+        $expectedMonth = null;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-1-21"));
+
+        $expectedMonth = null;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-1-26"));
+
+        $expectedMonth = 2;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-2-21"));
+
+        $expectedMonth = 3;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-3-21"));
+
+        $expectedMonth = 4;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-4-21"));
+
+        $expectedMonth = null;
+        $this->assertEquals($expectedMonth, $skp->getMilestoneMonthTobeDinilai($periodeRealisasiBulanan, $tenggangWaktuRealisasiBulanan, "2016-5-21"));
     }
 }
