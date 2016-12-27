@@ -37,6 +37,17 @@ class Skp
 		$this->skpItems = $skpItems;
 	}
 
+	public function addSkpItems($skpItems)
+	{
+		if(is_array($skpItems)) {
+			foreach ($skpItems as $skpItem) {
+				array_push($this->skpItems, $skpItem);
+			}
+		} else {
+			array_push($this->skpItems, $skpItems);
+		}
+	}
+
 	public function getSkpItems()
 	{
 		return $this->skpItems;
@@ -109,10 +120,11 @@ class Skp
 			if($indexOfCurrentMonth === 0) {
 				if(!$this->penilaianSpecificMonthAlreadyMarked($currentMonth)) {
 					if($this->canDoAnyRealisasiAccordingToNormalDate($periodeRealisasiBulanan, $currentDate) || $this->canDoAnyRealisasiAccordingToExtendedDate($tenggangWaktuRealisasiBulanan, $periodeRealisasiBulanan, $currentDate, $currentMonth)) {
+
 						return $currentMonth;
 					}
-				}
-				return null;				
+					return null;
+				}				
 			}
 
 			$previousMonthIndex = $indexOfCurrentMonth - 1;
@@ -176,10 +188,8 @@ class Skp
 			$maxPeriodeDate = date('t');
 			$periodeMax = "{$currentYear}-{$currentMonth}-{$maxPeriodeDate}";
 		}
-
 		
-
-		return $currentDate >= $periodeMin && $currentDate >= $periodeMax; 
+		return strtotime($currentDate) >= strtotime($periodeMin) && strtotime($currentDate) <= strtotime($periodeMax); 
 	}
 
 	public function canDoAnyRealisasiAccordingToExtendedDate(
@@ -213,7 +223,7 @@ class Skp
 
 		$extendedDatePeriode = date('Y-n-j', strtotime($periodeMax . "+{$tenggangWaktuRealisasiBulanan->value1} days"));
 		
-		return $currentDate <= $extendedDatePeriode;
+		return strtotime($currentDate) <= strtotime($extendedDatePeriode);
 	}
 
 
